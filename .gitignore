@@ -2,4 +2,4 @@ uploads/*
 !uploads/**/*.php
 
 # Agent
-.agent
+.agents
