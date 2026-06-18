@@ -112,26 +112,27 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
     <link rel="stylesheet" href="./style.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .stats-box {
-            background: rgba(255, 255, 255, 0.95);
-            color: #333;
-            border-radius: 20px;
+            background: #ffffff;
+            color: #2d3748;
+            border-radius: 16px;
             padding: 2.5rem 2rem;
             max-width: 700px;
             margin: 3rem auto;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
         }
 
         .stats-title {
             font-size: 2.2rem;
             font-weight: 700;
             margin-bottom: 2rem;
-            color: #764ba2;
+            color: #1a202c;
             letter-spacing: 1px;
             text-align: center;
         }
@@ -147,11 +148,12 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
         .stats-list li {
             font-size: 1.15rem;
             margin-bottom: 0.5rem;
-            background: #f8f8fc;
+            background: #f7fafc;
             border-radius: 8px;
             padding: 1rem 2rem;
-            box-shadow: 0 2px 8px #eee;
-            color: #333;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #edf2f7;
+            color: #2d3748;
             min-width: 180px;
             text-align: center;
         }
@@ -173,16 +175,21 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
         }
 
         .images-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
+            background: #edf2f7;
+            color: #2d3748;
             font-weight: 600;
             font-size: 1rem;
+            border-bottom: 2px solid #cbd5e0;
         }
 
         .images-table td a {
-            color: #667eea;
+            color: #f5576c;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .images-table td a:hover {
             text-decoration: underline;
-            font-weight: 500;
         }
 
         .images-table tr:last-child td {
@@ -337,13 +344,15 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
         }
 
         .page-link--default {
-            background: #f8f8fc;
-            color: #764ba2;
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
         }
 
         .page-link--active {
-            background: #764ba2;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: #fff;
+            border: 1px solid transparent;
         }
 
         .page-ellipsis {
@@ -376,9 +385,9 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
 <body>
     <header class="header">
         <div class="header-container">
-            <a href="/" id="home-link">
-                <!-- Using inline style for stats page header logo to match index if needed, or just depend on style.css -->
-                <img src="https://v4r.net/assets/logo-tvzme3ed.png" alt="V4R.NET - Upload" style="max-height: 40px;">
+            <a href="/" id="home-link" class="logo-text">
+                <img src="./assets/logo-icon.png" alt="T11N Icon" class="logo-icon-img">
+                t11n<span class="logo-highlight">upload</span>
             </a>
             <div class="nav-links">
                 <a href="/">Trang chủ</a>

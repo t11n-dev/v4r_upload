@@ -51,17 +51,15 @@ $finfo = new finfo(FILEINFO_MIME_TYPE);
 $detectedMime = $finfo->file($file["tmp_name"]);
 
 if (!isset(ALLOWED_MIME_TYPES[$detectedMime])) {
-    echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, GIF, WEBP allowed.']);
+    echo json_encode(['success' => false, 'message' => 'Invalid file type. Only JPG, PNG, GIF, WEBP, AVIF allowed.']);
     exit;
 }
 
-// Double-check with getimagesize ONLY if it is an image
-if (strpos($detectedMime, 'image/') === 0) {
-    $imageInfo = getimagesize($file["tmp_name"]);
-    if ($imageInfo === false) {
-        echo json_encode(['success' => false, 'message' => 'File is not a valid image']);
-        exit;
-    }
+// Double-check with getimagesize to prevent extension spoofing
+$imageInfo = getimagesize($file["tmp_name"]);
+if ($imageInfo === false) {
+    echo json_encode(['success' => false, 'message' => 'File is not a valid image']);
+    exit;
 }
 
 // Use detected MIME to determine safe extension

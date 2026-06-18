@@ -3,15 +3,21 @@
  * apidoc.php — API Documentation page.
  */
 session_start();
+
+$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'up.t11n.dev';
+$dir = dirname($_SERVER['SCRIPT_NAME']);
+$dir = ($dir === '/' || $dir === '\\') ? '' : $dir;
+$currentDomain = $protocol . '://' . $host . $dir;
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Documentation | V4R Fast Image Upload</title>
-    <meta name="description" content="API documentation for V4R Upload. Integration guide for uploading and deleting images.">
-    <link rel="icon" href="https://v4r.net/assets/site-image-ua62u0v5.png" type="image/x-icon">
+    <title>API Documentation | T11N Fast Image Upload</title>
+    <meta name="description" content="API documentation for T11N Upload. Integration guide for uploading and deleting images.">
+    <link rel="icon" href="./assets/favicon.png" type="image/png">
     <link rel="stylesheet" href="./style.css">
     <style>
         .api-container {
@@ -27,20 +33,22 @@ session_start();
         }
         .api-title {
             font-size: 2rem;
-            color: #f7fafc;
+            color: #1a202c;
             margin-bottom: 1rem;
-            border-bottom: 2px solid #e2e8f0;
+            border-bottom: 2px solid #cbd5e0;
             padding-bottom: 0.5rem;
         }
         .api-subtitle {
             font-size: 1.5rem;
-            color: #f7fafc;
+            color: #2d3748;
             margin-top: 2rem;
             margin-bottom: 1rem;
         }
         .endpoint {
-            background: #f7fafc;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
             border-left: 4px solid #4299e1;
+            border-radius: 6px;
             padding: 10px 15px;
             margin-bottom: 15px;
             font-family: monospace;
@@ -88,8 +96,9 @@ session_start();
 <body>
     <header class="header">
         <div class="header-container">
-            <a href="/" id="home-link">
-                <img src="https://v4r.net/assets/logo-tvzme3ed.png" alt="V4R.NET - Upload" class="Header-logo">
+            <a href="/" id="home-link" class="logo-text">
+                <img src="./assets/logo-icon.png" alt="T11N Icon" class="logo-icon-img">
+                t11n<span class="logo-highlight">upload</span>
             </a>
             <div class="nav-links">
                 <a href="/">Home</a>
@@ -101,7 +110,7 @@ session_start();
     <div class="container">
         <div class="api-container">
             <h1 class="api-title">REST API Documentation</h1>
-            <p>Integration guide for uploading and deleting images (single & bulk). CORS enabled. No API key required.</p>
+            <p>Integration guide for uploading and deleting images (single & bulk). Supports JPG, PNG, GIF, WEBP, AVIF. CORS enabled. No API key required.</p>
 
             <div class="api-section">
                 <h2 class="api-subtitle">1. Upload Images (Bulk Support)</h2>
@@ -134,14 +143,14 @@ session_start();
 
                 <h3>cURL — Multiple Files</h3>
                 <pre class="code-block">
-curl -X POST "https://up.v4r.net/api.php?action=upload" \
+curl -X POST "<?php echo htmlspecialchars($currentDomain); ?>/api.php?action=upload" \
   -F "files[]=@image1.jpg" \
   -F "files[]=@image2.png"
                 </pre>
 
                 <h3>cURL — Single File</h3>
                 <pre class="code-block">
-curl -X POST "https://up.v4r.net/api.php?action=upload" \
+curl -X POST "<?php echo htmlspecialchars($currentDomain); ?>/api.php?action=upload" \
   -F "file=@image1.jpg"
                 </pre>
 
@@ -154,7 +163,7 @@ curl -X POST "https://up.v4r.net/api.php?action=upload" \
       "name": "a1b2c3..._1739245678_image1.jpg",
       "original_name": "image1.jpg",
       "status": "success",
-      "url": "https://up.v4r.net/uploads/a1b2c3..._1739245678_image1.jpg",
+      "url": "<?php echo htmlspecialchars($currentDomain); ?>/uploads/a1b2c3..._1739245678_image1.jpg",
       "size": 123456,
       "mime": "image/jpeg",
       "width": 1920,
@@ -184,7 +193,7 @@ curl -X POST "https://up.v4r.net/api.php?action=upload" \
 
                 <h3>cURL Example</h3>
                 <pre class="code-block">
-curl -X POST "https://up.v4r.net/api.php?action=delete" \
+curl -X POST "<?php echo htmlspecialchars($currentDomain); ?>/api.php?action=delete" \
   -H "Content-Type: application/json" \
   -d '{"names": ["filename_to_delete.jpg"]}'
                 </pre>
@@ -241,7 +250,7 @@ curl -X POST "https://up.v4r.net/api.php?action=delete" \
 
     <footer class="footer">
         <div class="footer-container">
-            <p class="footer-text">© 2026 <a href="https://v4r.net/" target="_blank">V4R Team.</a> All rights reserved.</p>
+            <p class="footer-text">© 2026 <a href="https://t11n.dev/" target="_blank">T11N Team.</a> All rights reserved.</p>
         </div>
     </footer>
 </body>

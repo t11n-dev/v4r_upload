@@ -1,6 +1,6 @@
 # Ứng Dụng Upload Hình Ảnh
 
-Ứng dụng web upload hình ảnh (PNG, JPG, GIF, WEBP) hiện đại, hỗ trợ kéo thả, dán từ clipboard và upload hàng loạt. File được đổi tên an toàn, có thể xoá từ giao diện và server.
+Ứng dụng web upload hình ảnh (PNG, JPG, GIF, WEBP, AVIF) hiện đại, hỗ trợ kéo thả, dán từ clipboard và upload hàng loạt. File được đổi tên an toàn, có thể xoá từ giao diện và server.
 
 ## Tính năng
 - Kéo thả, click hoặc dán để upload
@@ -16,7 +16,7 @@
 ## Bảo mật
 - CSRF token cho request upload/xoá (web UI)
 - Validate MIME type thực sự bằng `finfo` + `getimagesize`
-- Chỉ cho phép file ảnh (JPG, PNG, GIF, WEBP)
+- Chỉ cho phép file ảnh (JPG, PNG, GIF, WEBP, AVIF)
 - Tên file ngẫu nhiên (32 ký tự alphanumeric + timestamp)
 - Escape HTML chống XSS khi hiển thị tên file
 - Xoá hàng loạt yêu cầu mật khẩu (xác thực server-side)
@@ -59,14 +59,14 @@ POST /api.php?action=upload
 
 **cURL (upload nhiều file):**
 ```bash
-curl -X POST "https://up.v4r.net/api.php?action=upload" \
+curl -X POST "https://up.t11n.dev/api.php?action=upload" \
   -F "files[]=@image1.jpg" \
   -F "files[]=@image2.png"
 ```
 
 **cURL (upload 1 file):**
 ```bash
-curl -X POST "https://up.v4r.net/api.php?action=upload" \
+curl -X POST "https://up.t11n.dev/api.php?action=upload" \
   -F "file=@image1.jpg"
 ```
 
@@ -79,7 +79,7 @@ curl -X POST "https://up.v4r.net/api.php?action=upload" \
       "name": "a1b2c3d4e5f678901234567890abcdef_1739245678_image1.jpg",
       "original_name": "image1.jpg",
       "status": "success",
-      "url": "https://up.v4r.net/uploads/a1b2c3d4e5f678901234567890abcdef_1739245678_image1.jpg",
+      "url": "https://up.t11n.dev/uploads/a1b2c3d4e5f678901234567890abcdef_1739245678_image1.jpg",
       "size": 123456,
       "mime": "image/jpeg",
       "width": 1920,
@@ -105,7 +105,7 @@ Content-Type: application/json
 
 **cURL (xoá hàng loạt):**
 ```bash
-curl -X POST "https://up.v4r.net/api.php?action=delete" \
+curl -X POST "https://up.t11n.dev/api.php?action=delete" \
   -H "Content-Type: application/json" \
   -d '{"names": ["a1b2c3d4..._1739245678_image1.jpg"]}'
 ```

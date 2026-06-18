@@ -7,7 +7,7 @@
 
 // API keys cho developer (thêm key mới vào mảng)
 const API_KEYS = [
-    'v4r-dev-key-2026-change-me',
+    't11n-dev-key-2026-change-me',
 ];
 
 // Allowed MIME types và extension tương ứng
@@ -16,16 +16,7 @@ const ALLOWED_MIME_TYPES = [
     'image/png'  => ['png'],
     'image/gif'  => ['gif'],
     'image/webp' => ['webp'],
-    // Archives
-    'application/zip'              => ['zip'],
-    'application/x-zip-compressed' => ['zip'],
-    'multipart/x-zip'              => ['zip'],
-    'application/x-rar-compressed' => ['rar'],
-    'application/vnd.rar'          => ['rar'],
-    'application/x-7z-compressed'  => ['7z'],
-    'application/x-tar'            => ['tar'],
-    'application/gzip'             => ['gz'],
-    'application/x-gzip'           => ['gz'],
+    'image/avif' => ['avif'],
 ];
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB

@@ -139,19 +139,12 @@ function handleUpload(): void
         $detectedMime = $finfo->file($file['tmp_name']);
 
         if (!isset(ALLOWED_MIME_TYPES[$detectedMime])) {
-            $fileResult['error'] = 'Invalid file type (' . $detectedMime . ')';
+            $fileResult['error'] = 'Invalid file type. Only JPG, PNG, GIF, WEBP, AVIF allowed.';
             $results[] = $fileResult;
             continue;
         }
 
-        // API restricton: Only allow images
-        if (strpos($detectedMime, 'image/') !== 0) {
-            $fileResult['error'] = 'API only allows image uploads';
-            $results[] = $fileResult;
-            continue;
-        }
-
-        // 4. Check ảnh thật sự (getimagesize)
+        // 4. Check ảnh thật sự (getimagesize) to prevent extension spoofing
         $imageInfo = getimagesize($file['tmp_name']);
         if ($imageInfo === false) {
             $fileResult['error'] = 'Not a valid image file';

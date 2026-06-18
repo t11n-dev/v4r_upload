@@ -20,12 +20,7 @@ class FileUploadComponent {
         this.files = [];
         this.maxFileSize = 100 * 1024 * 1024; // 100MB
         this.allowedTypes = [
-            "image/jpeg", "image/png", "image/gif", "image/webp",
-            "application/zip", "application/x-zip-compressed", "multipart/x-zip",
-            "application/x-rar-compressed", "application/vnd.rar",
-            "application/x-7z-compressed",
-            "application/x-tar",
-            "application/gzip", "application/x-gzip"
+            "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"
         ];
 
         // Read CSRF token from meta tag
@@ -136,17 +131,15 @@ class FileUploadComponent {
 
     validateFile(file) {
         // Check file type
-        if (!this.allowedTypes.includes(file.type) && !file.type.match(/application\/(x-)?(zip|rar|7z|tar|gzip|octet-stream)/)) {
-            // Note: Some browsers report empty type or weird types for archives, so we might need looser check or rely on extension if type is empty
-            if (!this.allowedTypes.includes(file.type)) {
-                // Fallback check by extension if type is empty or octet-stream
-                const ext = file.name.split('.').pop().toLowerCase();
-                const allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'zip', 'rar', '7z', 'tar', 'gz'];
-                if (!allowedExts.includes(ext)) {
-                    this.showError(`${file.name}: Unsupported file type.`);
-                    return false;
-                }
-            }
+        const ext = file.name.split('.').pop().toLowerCase();
+        const allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'];
+
+        const isAllowedMime = this.allowedTypes.includes(file.type);
+        const isAllowedExt = allowedExts.includes(ext);
+
+        if (!isAllowedExt || (!isAllowedMime && file.type !== "")) {
+            this.showError(`${file.name}: Unsupported file type. Only JPG, PNG, GIF, WEBP, AVIF allowed.`);
+            return false;
         }
 
         // Check file size
@@ -209,15 +202,15 @@ class FileUploadComponent {
             `;
         };
 
-        if (fileObj.file.type.startsWith('image/')) {
+        if (fileObj.file.type.startsWith('image/') || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'].includes(fileObj.name.split('.').pop().toLowerCase())) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 updateContent(e.target.result);
             };
             reader.readAsDataURL(fileObj.file);
         } else {
-            // Archive icon (Box/Package)
-            const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'%3E%3C/path%3E%3Cpolyline points='3.27 6.96 12 12.01 20.73 6.96'%3E%3C/polyline%3E%3Cline x1='12' y1='22.08' x2='12' y2='12'%3E%3C/line%3E%3C/svg%3E";
+            // Default image placeholder icon (fallback)
+            const icon = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='21' y1='15' x2='16' y2='10'%3E%3C/line%3E%3Cline x1='5' y1='21' x2='16' y2='10'%3E%3C/line%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3C/svg%3E";
             updateContent(icon, true);
         }
 

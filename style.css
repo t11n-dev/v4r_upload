@@ -6,10 +6,10 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #27577c 100%);
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
     min-height: 100vh;
     padding: 2rem;
-    color: #fff;
+    color: #2d3748;
 }
 
 header.header {
@@ -24,7 +24,10 @@ footer.footer {
 
 p.footer-text a {
     text-decoration: none;
-    color: #fff;
+    color: #4a5568;
+}
+p.footer-text {
+    color: #718096;
 }
 
 .container {
@@ -43,18 +46,18 @@ p.footer-text a {
     position: relative;
     padding: 3rem 2rem;
     text-align: center;
-    border: 3px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 20px;
+    border: 2px dashed #cbd5e0;
+    border-radius: 16px;
     transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
     cursor: pointer;
 }
 
 .upload-box.dragover {
-    border-color: #f093fb;
-    background: rgba(240, 147, 251, 0.1);
-    transform: scale(1.02);
+    border-color: #f5576c;
+    background: rgba(245, 87, 108, 0.03);
+    transform: scale(1.01);
 }
 
 .upload-box.uploading {
@@ -85,11 +88,11 @@ p.footer-text a {
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    color: #fff;
+    color: #1a202c;
 }
 
 .upload-subtitle {
-    color: #e2e8f0;
+    color: #718096;
     margin-bottom: 2rem;
     font-size: 0.95rem;
 }
@@ -146,27 +149,26 @@ p.footer-text a {
     transform: translate(-50%, -50%);
     font-weight: 600;
     font-size: 1rem;
-    color: #fff;
+    color: #2d3748;
     line-height: 1rem;
 }
 
 .progress-label {
-    color: #e2e8f0;
+    color: #718096;
     font-size: 0.9rem;
 }
 
 /* Files Preview */
 .files-preview {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
     padding: 2rem;
     opacity: 0;
     visibility: hidden;
     transform: translateY(20px);
     transition: all 0.4s ease;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
 .files-preview.show {
@@ -185,13 +187,13 @@ p.footer-text a {
 .preview-title {
     font-size: 1.3rem;
     font-weight: 600;
-    color: #fff;
+    color: #1a202c;
 }
 
 .add-more-btn {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #f7fafc;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
     padding: 0.5rem 1rem;
     border-radius: 8px;
     font-size: 0.85rem;
@@ -200,7 +202,8 @@ p.footer-text a {
 }
 
 .add-more-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #edf2f7;
+    color: #1a202c;
 }
 
 .files-list {
@@ -213,15 +216,14 @@ p.footer-text a {
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #f7fafc;
+    border: 1px solid #edf2f7;
     border-radius: 12px;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
 }
 
 .file-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: #edf2f7;
     transform: translateY(-2px);
 }
 
@@ -239,13 +241,13 @@ p.footer-text a {
 
 .file-name {
     font-weight: 500;
-    color: #fff;
+    color: #1a202c;
     margin-bottom: 0.25rem;
 }
 
 .file-size {
     font-size: 0.85rem;
-    color: #e2e8f0;
+    color: #718096;
 }
 
 .file-status {
@@ -270,9 +272,9 @@ p.footer-text a {
 }
 
 .file-action {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #fff;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #4a5568;
     width: 32px;
     height: 32px;
     border-radius: 6px;
@@ -284,12 +286,14 @@ p.footer-text a {
 }
 
 .file-action:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #edf2f7;
+    color: #1a202c;
 }
 
 .file-action.delete:hover {
-    background: rgba(245, 87, 108, 0.2);
-    border-color: #f5576c;
+    background: #fff5f5;
+    border-color: #feb2b2;
+    color: #e53e3e;
 }
 
 .file-url {
@@ -298,13 +302,12 @@ p.footer-text a {
 
 /* Upload Complete */
 .upload-complete {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
     padding: 3rem 2rem;
     text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
 }
 
 .complete-header {
@@ -342,12 +345,12 @@ p.footer-text a {
 .complete-title {
     font-size: 1.8rem;
     font-weight: 600;
-    color: #fff;
+    color: #1a202c;
     margin-bottom: 0.5rem;
 }
 
 .complete-subtitle {
-    color: #e2e8f0;
+    color: #718096;
     font-size: 1rem;
 }
 
@@ -380,13 +383,14 @@ p.footer-text a {
 }
 
 .view-files-btn {
-    background: rgba(255, 255, 255, 0.1);
-    color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #f7fafc;
+    color: #4a5568;
+    border: 1px solid #e2e8f0;
 }
 
 .view-files-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: #edf2f7;
+    color: #1a202c;
 }
 
 /* Success Animation */
@@ -415,7 +419,7 @@ p.footer-text a {
 .success-text {
     font-size: 1.3rem;
     font-weight: 600;
-    color: #fff;
+    color: #1a202c;
 }
 
 /* Error States */
@@ -572,6 +576,31 @@ p.footer-text a {
     width: auto;
 }
 
+.logo-text {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #1a202c;
+    text-decoration: none;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+}
+
+.logo-highlight {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 900;
+}
+
+.logo-icon-img {
+    height: 42px;
+    width: 42px;
+    margin-right: 10px;
+    border-radius: 8px;
+}
+
 .nav-links {
     display: flex;
     gap: 25px;
@@ -579,7 +608,7 @@ p.footer-text a {
 }
 
 .nav-links a {
-    color: rgba(255, 255, 255, 0.9);
+    color: #4a5568;
     text-decoration: none;
     font-weight: 500;
     font-size: 1.05rem;
@@ -595,12 +624,12 @@ p.footer-text a {
     left: 0;
     width: 0;
     height: 2px;
-    background: #fff;
+    background: #2d3748;
     transition: width 0.3s ease;
 }
 
 .nav-links a:hover {
-    color: #fff;
+    color: #1a202c;
 }
 
 .nav-links a:hover::after,
@@ -609,7 +638,7 @@ p.footer-text a {
 }
 
 .nav-links a.active {
-    color: #fff;
+    color: #1a202c;
     font-weight: 600;
 }
 
