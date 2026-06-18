@@ -71,35 +71,51 @@ $totalFiles = $stats['totalFiles'];
 $totalSize = $stats['totalSize'];
 
 $imagesPage = [];
-$currentIndex = 0;
-$limit = $start + $perPage;
+$allFiles = [];
 
-// Paginate by scanning directory, breaking early once limit is reached
+// Collect all files and parse timestamps from filenames (saving massive disk stat calls)
 if ($totalFiles > 0 && is_dir($dir)) {
     $dh = opendir($dir);
     if ($dh) {
         while (($file = readdir($dh)) !== false) {
-            // Stop scanning as soon as we have enough files for the current page
-            if ($currentIndex >= $limit) {
-                break;
-            }
             $filePath = $dir . '/' . $file;
             if ($file[0] !== '.' && is_file($filePath)) {
                 $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                 if (in_array($ext, $allowedExtensions)) {
-                    if ($currentIndex >= $start) {
-                        $imagesPage[] = [
-                            'name' => $file,
-                            'size' => filesize($filePath),
-                            'url'  => 'uploads/' . $file,
-                        ];
+                    // Fast timestamp extraction: random_timestamp_name.ext
+                    $parts = explode('_', $file, 3);
+                    if (count($parts) >= 2 && is_numeric($parts[1])) {
+                        $time = (int)$parts[1];
+                    } else {
+                        $time = filemtime($filePath);
                     }
-                    $currentIndex++;
+                    $allFiles[] = [
+                        'name' => $file,
+                        'time' => $time
+                    ];
                 }
             }
         }
         closedir($dh);
     }
+}
+
+// Sort files by time descending (newest first)
+usort($allFiles, function ($a, $b) {
+    return $b['time'] <=> $a['time'];
+});
+
+// Slice the files for the current page
+$pageFiles = array_slice($allFiles, $start, $perPage);
+
+foreach ($pageFiles as $f) {
+    $filePath = $dir . '/' . $f['name'];
+    $imagesPage[] = [
+        'name' => $f['name'],
+        'size' => filesize($filePath),
+        'time' => $f['time'],
+        'url'  => 'uploads/' . $f['name'],
+    ];
 }
 
 function formatSize($bytes)
@@ -113,59 +129,91 @@ function formatSize($bytes)
 $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
 ?>
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>Upload Statistics</title>
+    <title>Upload Statistics | T11N Upload</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="./style.css">
+    <!-- Favicon -->
+    <link rel="icon" href="./assets/favicon.png" type="image/png">
     <style>
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Outfit', sans-serif;
+            color: #2d3748;
         }
 
         .stats-box {
-            background: #ffffff;
-            color: #2d3748;
-            border-radius: 16px;
-            padding: 2.5rem 2rem;
-            max-width: 700px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 3rem 2.5rem;
+            max-width: 850px;
             margin: 3rem auto;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(226, 232, 240, 0.8);
         }
 
         .stats-title {
-            font-size: 2.2rem;
-            font-weight: 700;
+            font-size: 2.4rem;
+            font-weight: 800;
             margin-bottom: 2rem;
             color: #1a202c;
-            letter-spacing: 1px;
+            letter-spacing: -0.5px;
             text-align: center;
         }
 
         .stats-list {
             margin-bottom: 2.5rem;
-            display: flex;
-            gap: 2.5rem;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
             list-style: none;
+            padding: 0;
         }
 
         .stats-list li {
-            font-size: 1.15rem;
-            margin-bottom: 0.5rem;
-            background: #f7fafc;
-            border-radius: 8px;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 1.25rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
             border: 1px solid #edf2f7;
-            color: #2d3748;
-            min-width: 180px;
+            color: #4a5568;
             text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stats-list li:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+            border-color: #cbd5e0;
+        }
+
+        .stats-list li .stats-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-list li .stats-val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a202c;
         }
 
         .images-table {
@@ -175,79 +223,130 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
             background: #fff;
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 8px #eee;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            border: 1px solid #edf2f7;
         }
 
         .images-table th,
         .images-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #eee;
+            padding: 14px 18px;
+            text-align: left;
+            vertical-align: middle;
         }
 
         .images-table th {
-            background: #edf2f7;
+            background: #f8fafc;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .images-table tr {
+            transition: background 0.2s ease;
+        }
+
+        .images-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .images-table td {
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.95rem;
             color: #2d3748;
-            font-weight: 600;
-            font-size: 1rem;
-            border-bottom: 2px solid #cbd5e0;
-        }
-
-        .images-table td a {
-            color: #f5576c;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .images-table td a:hover {
-            text-decoration: underline;
         }
 
         .images-table tr:last-child td {
             border-bottom: none;
         }
 
-        .images-table td {
-            font-size: 0.98rem;
+        /* Thumb column */
+        .preview-col {
+            width: 80px;
+        }
+
+        .table-thumb {
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            display: block;
+            transition: transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .table-thumb:hover {
+            transform: scale(1.08);
+        }
+
+        .filename-col {
+            max-width: 280px;
             overflow-wrap: anywhere;
-            word-break: break-word;
+            word-break: break-all;
+            font-weight: 500;
+        }
+
+        .btn-view {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: #edf2f7;
+            color: #4a5568;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-view:hover {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.2);
+            transform: translateY(-1px);
         }
 
         .no-images {
             text-align: center;
-            color: #764ba2;
-            font-size: 1.2rem;
+            color: #4a5568;
+            font-size: 1.1rem;
             margin-top: 2rem;
-            background: #f8f8fc;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 8px #eee;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 2.5rem;
+            border: 1px dashed #cbd5e0;
         }
 
         /* Bulk delete */
         .bulk-delete-section {
-            text-align: center;
-            margin-bottom: 2rem;
+            text-align: right;
+            margin-bottom: 1.5rem;
         }
 
         .btn-delete-all {
-            background: #f5576c;
-            color: #fff;
+            background: #fff5f5;
+            color: #e53e3e;
             font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            padding: 0.75rem 2rem;
-            font-size: 1rem;
-            box-shadow: 0 2px 8px #eee;
+            border: 1px solid #fed7d7;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .btn-delete-all:hover {
-            background: #e04458;
+            background: #e53e3e;
+            color: #fff;
+            border-color: #e53e3e;
+            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.2);
             transform: translateY(-1px);
         }
 
-        /* Modal */
+        /* Modal styling */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -255,138 +354,207 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.25);
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 9999;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.2s ease-out;
         }
 
         .modal-box {
             background: #fff;
-            padding: 2rem 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(118, 75, 162, 0.3);
-            max-width: 350px;
-            margin: auto;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 400px;
+            width: 90%;
             text-align: center;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .modal-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #764ba2;
-            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 1.25rem;
         }
 
         .modal-input {
             width: 100%;
-            padding: 0.75rem;
-            border-radius: 8px;
-            border: 1px solid #eee;
+            padding: 0.85rem 1rem;
+            border-radius: 10px;
+            border: 1px solid #cbd5e0;
             font-size: 1rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .modal-input:focus {
+            border-color: #f5576c;
+            box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.15);
         }
 
         .modal-error {
-            color: #f5576c;
-            font-size: 0.98rem;
-            margin-bottom: 1rem;
+            color: #e53e3e;
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
             display: none;
+            font-weight: 500;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
 
         .btn-confirm {
-            background: #764ba2;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: #fff;
             font-weight: 600;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 0.75rem 2rem;
             font-size: 1rem;
-            margin-right: 8px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(245, 87, 108, 0.2);
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(245, 87, 108, 0.3);
         }
 
         .btn-cancel {
-            background: #eee;
-            color: #764ba2;
+            background: #edf2f7;
+            color: #4a5568;
             font-weight: 600;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 0.75rem 2rem;
             font-size: 1rem;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #e2e8f0;
         }
 
         /* Delete messages */
         .delete-msg {
             font-weight: 600;
             text-align: center;
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
         }
 
         .delete-msg.error {
-            color: #f5576c;
+            color: #c53030;
             background: #fff5f5;
+            border: 1px solid #feb2b2;
         }
 
         .delete-msg.success {
-            color: #48bb78;
+            color: #2f855a;
             background: #f0fff4;
+            border: 1px solid #9ae6b4;
         }
 
         /* Pagination */
         .pagination {
-            margin: 2rem 0;
+            margin: 2.5rem 0 0 0;
             text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
         }
 
         .page-link {
-            display: inline-block;
-            margin: 0 6px;
-            padding: 8px 16px;
-            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            border-radius: 10px;
             font-weight: 600;
             text-decoration: none;
-            box-shadow: 0 2px 8px #eee;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
         }
 
         .page-link--default {
-            background: #f7fafc;
+            background: #ffffff;
             color: #4a5568;
             border: 1px solid #e2e8f0;
+        }
+
+        .page-link--default:hover {
+            border-color: #cbd5e0;
+            background: #f8fafc;
+            color: #1a202c;
         }
 
         .page-link--active {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: #fff;
-            border: 1px solid transparent;
+            border: none;
+            box-shadow: 0 4px 10px rgba(245, 87, 108, 0.25);
         }
 
         .page-ellipsis {
-            margin: 0 6px;
-            color: #aaa;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            color: #a0aec0;
         }
 
-        @media (max-width: 700px) {
+        @media (max-width: 768px) {
             .stats-box {
-                padding: 1rem;
+                padding: 1.5rem;
+                margin: 1.5rem 10px;
             }
 
             .stats-title {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
+            }
+
+            .stats-list {
+                grid-template-columns: 1fr;
+                gap: 1rem;
             }
 
             .stats-list li {
-                padding: 0.5rem 1rem;
-                min-width: 120px;
+                padding: 1rem;
             }
 
             .images-table th,
             .images-table td {
-                padding: 8px 6px;
+                padding: 10px 12px;
+            }
+
+            .filename-col {
+                max-width: 150px;
             }
         }
     </style>
@@ -409,8 +577,14 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
     <div class="stats-box">
         <div class="stats-title">Upload Statistics</div>
         <ul class="stats-list">
-            <li><b>Total files:</b> <?php echo $totalFiles; ?></li>
-            <li><b>Total size:</b> <?php echo formatSize($totalSize); ?></li>
+            <li>
+                <span class="stats-label">Total Files</span>
+                <span class="stats-val"><?php echo $totalFiles; ?></span>
+            </li>
+            <li>
+                <span class="stats-label">Total Size</span>
+                <span class="stats-val"><?php echo formatSize($totalSize); ?></span>
+            </li>
         </ul>
 
         <?php echo $deleteMessage; ?>
@@ -420,48 +594,31 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
                 <button type="button" id="bulkDeleteBtn" class="btn-delete-all">Delete All Images</button>
             </div>
 
-            <!-- Password modal -->
-            <div class="modal-overlay" id="passwordModal">
-                <div class="modal-box">
-                    <div class="modal-title">Enter password to delete all images</div>
-                    <form id="bulkDeleteForm" method="post" action="stats.php">
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
-                        <input type="hidden" name="delete_all" value="1">
-                        <input type="password" name="password" id="deletePassword" class="modal-input" placeholder="Password" autocomplete="off">
-                        <div class="modal-error" id="passwordError"></div>
-                        <button type="submit" class="btn-confirm">Confirm</button>
-                        <button type="button" id="cancelDeleteBtn" class="btn-cancel">Cancel</button>
-                    </form>
-                </div>
-            </div>
+            <!-- Password modal will be rendered at the bottom of the page to fix backdrop-filter containment issues -->
 
-            <script>
-                document.getElementById('bulkDeleteBtn').onclick = function () {
-                    document.getElementById('passwordModal').style.display = 'flex';
-                    document.getElementById('deletePassword').value = '';
-                    document.getElementById('passwordError').style.display = 'none';
-                };
-                document.getElementById('cancelDeleteBtn').onclick = function () {
-                    document.getElementById('passwordModal').style.display = 'none';
-                };
-            </script>
 
             <table class="images-table">
                 <thead>
                     <tr>
-                        <th>#</th>
+                        <th style="width: 50px;">#</th>
+                        <th class="preview-col">Preview</th>
                         <th>File Name</th>
-                        <th>Size</th>
-                        <th>Link</th>
+                        <th style="width: 180px;">Upload Date</th>
+                        <th style="width: 120px;">Size</th>
+                        <th style="width: 100px;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($imagesPage as $i => $img) { ?>
                         <tr>
                             <td><?php echo $start + $i + 1; ?></td>
-                            <td><?php echo htmlspecialchars($img['name']); ?></td>
+                            <td class="preview-col">
+                                <img src="<?php echo htmlspecialchars($img['url']); ?>" alt="Preview" class="table-thumb" loading="lazy">
+                            </td>
+                            <td class="filename-col"><?php echo htmlspecialchars($img['name']); ?></td>
+                            <td><?php echo date('Y-m-d H:i:s', $img['time']); ?></td>
                             <td><?php echo formatSize($img['size']); ?></td>
-                            <td><a href="<?php echo htmlspecialchars($img['url']); ?>" target="_blank">View</a></td>
+                            <td><a href="<?php echo htmlspecialchars($img['url']); ?>" target="_blank" class="btn-view">View</a></td>
                         </tr>
                     <?php } ?>
                 </tbody>
@@ -493,6 +650,36 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
             <div class="no-images">No images uploaded yet.</div>
         <?php } ?>
     </div>
+
+    <?php if ($totalFiles > 0) { ?>
+        <!-- Password modal -->
+        <div class="modal-overlay" id="passwordModal">
+            <div class="modal-box">
+                <div class="modal-title">Enter password to delete all images</div>
+                <form id="bulkDeleteForm" method="post" action="stats.php">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token']); ?>">
+                    <input type="hidden" name="delete_all" value="1">
+                    <input type="password" name="password" id="deletePassword" class="modal-input" placeholder="Password" autocomplete="off">
+                    <div class="modal-error" id="passwordError"></div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-confirm">Confirm</button>
+                        <button type="button" id="cancelDeleteBtn" class="btn-cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            document.getElementById('bulkDeleteBtn').onclick = function () {
+                document.getElementById('passwordModal').style.display = 'flex';
+                document.getElementById('deletePassword').value = '';
+                document.getElementById('passwordError').style.display = 'none';
+            };
+            document.getElementById('cancelDeleteBtn').onclick = function () {
+                document.getElementById('passwordModal').style.display = 'none';
+            };
+        </script>
+    <?php } ?>
 </body>
 
 </html>
