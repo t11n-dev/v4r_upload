@@ -236,7 +236,7 @@ curl -X POST "<?php echo htmlspecialchars($currentDomain); ?>/api.php?action=del
                         </tr>
                         <tr>
                             <td>413</td>
-                            <td>File too large (>100MB)</td>
+                            <td>File too large (>50MB)</td>
                         </tr>
                         <tr>
                             <td>500</td>

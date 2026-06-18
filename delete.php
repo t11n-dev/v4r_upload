@@ -50,6 +50,7 @@ if (!in_array($ext, $allowedExtensions)) {
 
 if (is_file($filePath)) {
     if (unlink($filePath)) {
+        clearStatsCache();
         echo json_encode(['success' => true]);
     } else {
         http_response_code(500);

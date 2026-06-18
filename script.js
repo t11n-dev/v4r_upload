@@ -18,7 +18,10 @@ class FileUploadComponent {
         this.viewFilesBtn = document.getElementById("viewFilesBtn");
 
         this.files = [];
-        this.maxFileSize = 100 * 1024 * 1024; // 100MB
+        this.uploadQueue = [];
+        this.activeUploads = 0;
+        this.maxConcurrentUploads = 5; // Limit to 5 concurrent uploads to protect VPS
+        this.maxFileSize = 50 * 1024 * 1024; // 50MB
         this.allowedTypes = [
             "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"
         ];
@@ -114,19 +117,37 @@ class FileUploadComponent {
             this.showPreview();
             this.uploadBox.classList.add("uploading");
 
-            // Upload all new files — only once
-            let completedCount = 0;
-            const totalCount = filesToUpload.length;
-
-            filesToUpload.forEach((fileObj) => {
-                this.uploadFileToServer(fileObj).then(() => {
-                    completedCount++;
-                    if (completedCount === totalCount) {
-                        this.completeUpload();
-                    }
-                });
-            });
+            // Add new files to upload queue
+            this.uploadQueue.push(...filesToUpload);
+            
+            // Start processing queue
+            this.processQueue();
         }
+    }
+
+    processQueue() {
+        // If we reached max concurrent uploads or queue is empty, do nothing
+        if (this.activeUploads >= this.maxConcurrentUploads || this.uploadQueue.length === 0) {
+            return;
+        }
+
+        const fileObj = this.uploadQueue.shift();
+        this.activeUploads++;
+
+        this.uploadFileToServer(fileObj).then(() => {
+            this.activeUploads--;
+            
+            // Check if all files in the list have finished uploading
+            const allFinished = this.files.every(f => f.status === "success" || f.status === "error");
+            if (allFinished) {
+                this.completeUpload();
+            } else {
+                this.processQueue();
+            }
+        });
+
+        // Trigger next queue item if available and below limit
+        this.processQueue();
     }
 
     validateFile(file) {
@@ -144,7 +165,7 @@ class FileUploadComponent {
 
         // Check file size
         if (file.size > this.maxFileSize) {
-            this.showError(`${file.name}: File size must be less than 100MB.`);
+            this.showError(`${file.name}: File size must be less than 50MB.`);
             return false;
         }
 
@@ -413,7 +434,7 @@ class FileUploadComponent {
         div.className = "uploaded-url-list";
         div.style.marginTop = "24px";
         div.style.padding = "8px 0";
-        div.style.borderTop = "1px solid #eee";
+        div.style.borderTop = "1px solid #e2e8f0";
 
         const origin = window.location.origin + "/";
 
@@ -425,12 +446,44 @@ class FileUploadComponent {
                 const escapedUrl = this.escapeHtml(fullUrl);
 
                 div.innerHTML += `
-                    <div style="margin-bottom:24px; background:transparent; border-radius:8px; box-shadow:0 2px 8px #eee; padding:16px;">
-                        <div style="font-weight:600; margin-bottom:8px; color:#333;">Image ${idx + 1}</div>
-                        <div style="margin-bottom:15px"><b>URL:</b> <span class="copy-text" data-copy="${escapedUrl}" style="cursor:pointer; background:#48bb78; padding:2px 6px; border-radius:4px; text-decoration:none;">${escapedUrl}</span></div>
-                        <div style="margin-bottom:15px"><b>BBCode:</b> <span class="copy-text" data-copy="[img]${escapedUrl}[/img]" style="cursor:pointer; background:#48bb78; padding:2px 6px; border-radius:4px;">[img]${escapedUrl}[/img]</span></div>
-                        <div style="margin-bottom:15px"><b>HTML:</b> <span class="copy-text" data-copy="&lt;img src='${escapedUrl}' alt='image'&gt;" style="cursor:pointer; background:#48bb78; padding:2px 6px; border-radius:4px;">&lt;img src='${escapedUrl}' alt='image'&gt;</span></div>
-                        <div style="margin-bottom:15px"><b>Markdown:</b> <span class="copy-text" data-copy="![](${escapedUrl})" style="cursor:pointer; background:#48bb78; padding:2px 6px; border-radius:4px;">![](${escapedUrl})</span></div>
+                    <div style="margin-bottom:24px; background:#f7fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; text-align:left;">
+                        <div style="font-weight:700; margin-bottom:16px; color:#1a202c; font-size:1.05rem;">Image ${idx + 1}</div>
+                        
+                        <!-- URL Row -->
+                        <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:600; font-size:0.85rem; color:#4a5568; min-width:85px; text-transform:uppercase; letter-spacing:0.5px;">URL</span>
+                            <div style="flex:1; display:flex; background:#ffffff; border:1px solid #cbd5e0; border-radius:6px; overflow:hidden; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
+                                <input type="text" readonly value="${escapedUrl}" style="flex:1; border:none; padding:8px 12px; font-size:0.85rem; color:#2d3748; background:transparent; outline:none; font-family:Consolas, Monaco, monospace;">
+                                <button class="copy-text-btn" data-copy="${escapedUrl}">Copy</button>
+                            </div>
+                        </div>
+
+                        <!-- BBCode Row -->
+                        <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:600; font-size:0.85rem; color:#4a5568; min-width:85px; text-transform:uppercase; letter-spacing:0.5px;">BBCode</span>
+                            <div style="flex:1; display:flex; background:#ffffff; border:1px solid #cbd5e0; border-radius:6px; overflow:hidden; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
+                                <input type="text" readonly value="[img]${escapedUrl}[/img]" style="flex:1; border:none; padding:8px 12px; font-size:0.85rem; color:#2d3748; background:transparent; outline:none; font-family:Consolas, Monaco, monospace;">
+                                <button class="copy-text-btn" data-copy="[img]${escapedUrl}[/img]">Copy</button>
+                            </div>
+                        </div>
+
+                        <!-- HTML Row -->
+                        <div style="margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:600; font-size:0.85rem; color:#4a5568; min-width:85px; text-transform:uppercase; letter-spacing:0.5px;">HTML</span>
+                            <div style="flex:1; display:flex; background:#ffffff; border:1px solid #cbd5e0; border-radius:6px; overflow:hidden; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
+                                <input type="text" readonly value="&lt;img src='${escapedUrl}' alt='image'&gt;" style="flex:1; border:none; padding:8px 12px; font-size:0.85rem; color:#2d3748; background:transparent; outline:none; font-family:Consolas, Monaco, monospace;">
+                                <button class="copy-text-btn" data-copy="&lt;img src='${escapedUrl}' alt='image'&gt;">Copy</button>
+                            </div>
+                        </div>
+
+                        <!-- Markdown Row -->
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:600; font-size:0.85rem; color:#4a5568; min-width:85px; text-transform:uppercase; letter-spacing:0.5px;">Markdown</span>
+                            <div style="flex:1; display:flex; background:#ffffff; border:1px solid #cbd5e0; border-radius:6px; overflow:hidden; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
+                                <input type="text" readonly value="![](${escapedUrl})" style="flex:1; border:none; padding:8px 12px; font-size:0.85rem; color:#2d3748; background:transparent; outline:none; font-family:Consolas, Monaco, monospace;">
+                                <button class="copy-text-btn" data-copy="![](${escapedUrl})">Copy</button>
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -440,18 +493,24 @@ class FileUploadComponent {
 
         // Attach copy event listeners
         setTimeout(() => {
-            document.querySelectorAll(".copy-text").forEach((el) => {
-                el.addEventListener("click", function () {
+            document.querySelectorAll(".copy-text-btn").forEach((btn) => {
+                btn.addEventListener("click", function () {
                     const val = this.getAttribute("data-copy");
                     navigator.clipboard.writeText(val).then(() => {
-                        const originalText = val;
-                        el.style.background = "#d4edda";
-                        el.style.color = "#155724";
-                        el.textContent = "Copied!";
+                        const originalBg = btn.style.background;
+                        const originalColor = btn.style.color;
+                        const originalBorder = btn.style.borderColor;
+                        
+                        btn.style.background = "#d4edda";
+                        btn.style.color = "#155724";
+                        btn.style.borderColor = "#c3e6cb";
+                        btn.textContent = "Copied!";
+                        
                         setTimeout(() => {
-                            el.textContent = originalText;
-                            el.style.background = "";
-                            el.style.color = "";
+                            btn.textContent = "Copy";
+                            btn.style.background = originalBg;
+                            btn.style.color = originalColor;
+                            btn.style.borderColor = originalBorder;
                         }, 1200);
                     });
                 });

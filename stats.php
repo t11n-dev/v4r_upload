@@ -15,8 +15,10 @@ if (empty($_SESSION['csrf_token'])) {
 
 require_once __DIR__ . '/config.php';
 
-// Bulk delete password — stored server-side only
-const BULK_DELETE_PASSWORD = 'admin2026';
+// Set default timezone to Asia/Ho_Chi_Minh (UTC+7)
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+// Dynamic bulk delete password based on current date in dmY format (e.g., 18062026)
+$bulkDeletePassword = date('dmY');
 
 $dir = UPLOAD_DIR;
 $allowedExtensions = array_merge(...array_values(ALLOWED_MIME_TYPES));
@@ -30,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all'])) {
     // Validate CSRF token
     if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
         $deleteMessage = '<div class="delete-msg error">Invalid CSRF token.</div>';
-    } elseif (!isset($_POST['password']) || $_POST['password'] !== BULK_DELETE_PASSWORD) {
+    } elseif (!isset($_POST['password']) || $_POST['password'] !== $bulkDeletePassword) {
         $deleteMessage = '<div class="delete-msg error">Incorrect password.</div>';
     } else {
         $deleted = 0;
@@ -39,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all'])) {
             if ($dh) {
                 while (($file = readdir($dh)) !== false) {
                     $filePath = $dir . '/' . $file;
-                    if (is_file($filePath)) {
+                    if ($file[0] !== '.' && is_file($filePath)) {
                         $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                         if (in_array($ext, $allowedExtensions)) {
                             if (unlink($filePath)) {
@@ -51,36 +53,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_all'])) {
                 closedir($dh);
             }
         }
-        $deleteMessage = '<div class="delete-msg success">Deleted ' . $deleted . ' images. Reloading page after 3s...</div>';
+        // Clear stats cache after bulk deletion
+        clearStatsCache();
+
+        $deleteMessage = '<div class="delete-msg success">Deleted ' . $deleted . ' images. Reloading page in 3s...</div>';
         // Regenerate CSRF token after successful action
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 
-        // Reload page after 3s second
+        // Reload page after 3 seconds
         echo '<script>setTimeout(function(){ window.location.href = "stats.php"; }, 3000);</script>';
     }
 }
 
-// Scan uploads directory
-$totalFiles = 0;
-$totalSize = 0;
+// Get cached total file count and size
+$stats = getStats();
+$totalFiles = $stats['totalFiles'];
+$totalSize = $stats['totalSize'];
+
 $imagesPage = [];
 $currentIndex = 0;
+$limit = $start + $perPage;
 
-if (is_dir($dir)) {
+// Paginate by scanning directory, breaking early once limit is reached
+if ($totalFiles > 0 && is_dir($dir)) {
     $dh = opendir($dir);
     if ($dh) {
         while (($file = readdir($dh)) !== false) {
+            // Stop scanning as soon as we have enough files for the current page
+            if ($currentIndex >= $limit) {
+                break;
+            }
             $filePath = $dir . '/' . $file;
-            if (is_file($filePath)) {
+            if ($file[0] !== '.' && is_file($filePath)) {
                 $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
                 if (in_array($ext, $allowedExtensions)) {
-                    $totalFiles++;
-                    $size = filesize($filePath);
-                    $totalSize += $size;
-                    if ($currentIndex >= $start && count($imagesPage) < $perPage) {
+                    if ($currentIndex >= $start) {
                         $imagesPage[] = [
                             'name' => $file,
-                            'size' => $size,
+                            'size' => filesize($filePath),
                             'url'  => 'uploads/' . $file,
                         ];
                     }
@@ -390,7 +400,7 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
                 t11n<span class="logo-highlight">upload</span>
             </a>
             <div class="nav-links">
-                <a href="/">Trang chủ</a>
+                <a href="/">Home</a>
                 <a href="apidoc.php">API Doc</a>
             </div>
         </div>

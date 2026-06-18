@@ -1,11 +1,11 @@
 <?php
 /**
- * api.php — REST API cho upload và xoá (hỗ trợ single/bulk).
+ * api.php — REST API for upload and delete (supports single/bulk).
  *
  * Endpoints:
  *   POST /api.php?action=upload
  *      Content-Type: multipart/form-data
- *      Field: `files[]` (nhiều file — BẮT BUỘC có `[]`), `file` (1 file), hoặc bất kỳ field name nào
+ *      Field: `files[]` (multiple files — REQUIRED to have `[]`), `file` (1 file), or any field name
  *
  *   POST /api.php?action=delete
  *      Content-Type: application/json
@@ -32,13 +32,13 @@ function jsonResponse(int $statusCode, array $data): void
 }
 
 /**
- * Chuẩn hoá $_FILES thành mảng phẳng các file objects dễ xử lý.
+ * Normalize $_FILES into a flat array of easy-to-process file objects.
  *
- * Hỗ trợ mọi cách gửi:
- *   - files[]  → PHP parse thành array (multi)
- *   - files    → PHP chỉ giữ file cuối (scalar) — nhưng ta scan tất cả fields
- *   - file     → scalar đơn lẻ
- *   - Bất kỳ field name nào khác
+ * Supports all transmission methods:
+ *   - files[]  → PHP parses as array (multi)
+ *   - files    → PHP only keeps the last file (scalar) — but we scan all fields
+ *   - file     → single scalar
+ *   - Any other field name
  */
 function collectAllUploadedFiles(): array
 {
@@ -97,19 +97,25 @@ switch ($action) {
 
 function handleUpload(): void
 {
-    // Scan tất cả $_FILES fields — không phụ thuộc tên field
+    // Scan all $_FILES fields — independent of field name
     $fileList = collectAllUploadedFiles();
 
     if (empty($fileList)) {
         jsonResponse(400, ['success' => false, 'error' => 'No files provided. Use field "files[]", "file", or any field name']);
     }
 
-    $results = [];
+    // Limit the number of files per request to prevent server resource exhaustion
+    if (count($fileList) > MAX_API_FILE_COUNT) {
+        jsonResponse(400, ['success' => false, 'error' => 'Too many files. Maximum allowed per request is ' . MAX_API_FILE_COUNT]);
+    }
 
-    // Lấy URL base
+    $results = [];
+    $anySuccess = false;
+
+    // Get base URL
     $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
     $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']);
-    // Xoá slash cuối nếu có để nối chuỗi cho đẹp
+    // Remove trailing slash if exists for cleaner concatenation
     $baseUrl = rtrim($baseUrl, '/');
 
     foreach ($fileList as $file) {
@@ -155,13 +161,14 @@ function handleUpload(): void
         // 5. Xử lý tên file và lưu
         $allowedExtensions = ALLOWED_MIME_TYPES[$detectedMime];
         $originalExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        // Nếu ext gốc nằm trong list cho phép thì giữ nguyên, ngược lại lấy cái đầu tiên
+        // If original ext is in allowed list, keep it; otherwise, take the first one
         $finalExt = in_array($originalExt, $allowedExtensions) ? $originalExt : $allowedExtensions[0];
 
         $savedName = generateUniqueFileName($file['name'], $finalExt);
         $targetFile = UPLOAD_DIR . $savedName;
 
         if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+            $anySuccess = true;
             $results[] = [
                 'name'          => $savedName,          // Tên file mới trên disk
                 'original_name' => $file['name'],       // Tên gốc user up lên
@@ -178,6 +185,10 @@ function handleUpload(): void
         }
     }
 
+    if ($anySuccess) {
+        clearStatsCache();
+    }
+
     jsonResponse(200, [
         'success' => true,
         'data'    => $results
@@ -189,7 +200,7 @@ function handleDelete(): void
     $input = json_decode(file_get_contents('php://input'), true);
     
     if (!$input) {
-        // Fallback: Check $_POST nếu gọi form-data delete (ít dùng nhưng phòng hờ)
+        // Fallback: Check $_POST if calling form-data delete (rarely used but kept as backup)
         $input = $_POST;
     }
 
@@ -200,18 +211,19 @@ function handleDelete(): void
     }
 
     $results = [];
+    $anySuccess = false;
 
     foreach ($names as $name) {
         if (empty($name)) continue;
         
-        $imageName = basename($name); // Ngăn chặn directory traversal
+        $imageName = basename($name); // Prevent directory traversal
         $filePath = UPLOAD_DIR . $imageName;
 
-        // Check path traversal & extension (bảo mật)
+        // Check path traversal & extension (security)
         $ext = strtolower(pathinfo($imageName, PATHINFO_EXTENSION));
         $allExtensions = array_merge(...array_values(ALLOWED_MIME_TYPES));
         
-        // Chỉ cho phép xoá file thuộc extension cho phép (tránh xoá bậy file .php hệ thống)
+        // Only allow deleting files with allowed extensions (prevents malicious system file deletion)
         if (!in_array($ext, $allExtensions)) {
             $results[] = ['name' => $imageName, 'status' => 'error', 'error' => 'Invalid extension'];
             continue;
@@ -223,10 +235,15 @@ function handleDelete(): void
         }
 
         if (unlink($filePath)) {
+            $anySuccess = true;
             $results[] = ['name' => $imageName, 'status' => 'success'];
         } else {
             $results[] = ['name' => $imageName, 'status' => 'error', 'error' => 'Delete failed'];
         }
+    }
+
+    if ($anySuccess) {
+        clearStatsCache();
     }
 
     jsonResponse(200, [

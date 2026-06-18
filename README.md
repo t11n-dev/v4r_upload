@@ -1,70 +1,70 @@
-# Ứng Dụng Upload Hình Ảnh
+# T11N UPLOAD - Modern Image Upload Application
 
-Ứng dụng web upload hình ảnh (PNG, JPG, GIF, WEBP, AVIF) hiện đại, hỗ trợ kéo thả, dán từ clipboard và upload hàng loạt. File được đổi tên an toàn, có thể xoá từ giao diện và server.
+A modern web application for image upload (PNG, JPG, GIF, WEBP, AVIF) with drag & drop, clipboard paste, and bulk upload support. Files are securely renamed and can be deleted from both the web UI and the server.
 
-## Tính năng
-- Kéo thả, click hoặc dán để upload
-- Upload hàng loạt
-- Kiểm tra định dạng file và kích thước (tối đa 100MB)
-- Đổi tên file ngẫu nhiên: `32kytu_timestamp_tenanh.ext` (chống đoán tên file)
-- Sao chép link: URL, BBCode, HTML, Markdown
-- Xoá file từ giao diện và server
-- Giao diện responsive, hiện đại
-- **REST API** cho developer (upload/xoá đơn lẻ hoặc hàng loạt)
-- Link không tồn tại tự chuyển về trang chủ (`.htaccess`)
+## Features
+- Drag & drop, click, or paste from clipboard to upload
+- Bulk/multiple file uploads
+- Size (Max 50MB) and format validation
+- Secure random renaming: `32chars_timestamp_originalName.ext` (prevents filename enumeration/guessing)
+- Copy links easily: Direct URL, BBCode, HTML, and Markdown formats
+- Delete files from the UI and server
+- Fully responsive, premium modern interface
+- **REST API** for developers (supports single or bulk upload/delete)
+- Non-existent links automatically redirect to home page (`.htaccess`)
 
-## Bảo mật
-- CSRF token cho request upload/xoá (web UI)
-- Validate MIME type thực sự bằng `finfo` + `getimagesize`
-- Chỉ cho phép file ảnh (JPG, PNG, GIF, WEBP, AVIF)
-- Tên file ngẫu nhiên (32 ký tự alphanumeric + timestamp)
-- Escape HTML chống XSS khi hiển thị tên file
-- Xoá hàng loạt yêu cầu mật khẩu (xác thực server-side)
+## Security
+- CSRF token validation for secure upload/delete requests (web UI)
+- Strict MIME type verification using `finfo` + `getimagesize` (prevents extension spoofing)
+- Restricts uploads strictly to images (JPG, PNG, GIF, WEBP, AVIF)
+- Random filename obfuscation (32 hex characters + timestamp)
+- HTML escaping to prevent XSS when displaying filenames
+- Path traversal protection using `basename()` and `realpath()` comparison
 
-## Hướng dẫn sử dụng
-1. Clone/download dự án vào web server (Laragon/XAMPP).
-2. Đảm bảo thư mục `uploads/` có quyền ghi.
-3. Mở `index.php` trên trình duyệt.
-4. Upload ảnh bằng cách kéo thả, click hoặc dán.
-5. Sao chép link hoặc xoá file tuỳ ý.
-6. **Lưu ý:** Tên ảnh sau upload sẽ có dạng `a1b2c3d4..._1739245678_image.jpg`.
+## Getting Started
+1. Clone or download this repository to your PHP server (e.g., Laragon, XAMPP, Nginx/Apache).
+2. Ensure the `uploads/` directory has write permissions (`chmod 755` or `777`).
+3. Open the homepage in your browser.
+4. Upload images by dragging, clicking, or pasting.
+5. Copy share links or delete files as needed.
+6. **Note:** Uploaded files will be renamed like `a1b2c3d4..._1739245678_image.jpg`.
 
-## Cấu trúc thư mục
-- `index.php` — Giao diện chính
-- `script.js` — Logic frontend
-- `style.css` — Giao diện CSS
-- `upload.php` — Xử lý upload file từ web UI
-- `delete.php` — Xử lý xoá file từ web UI
-- `api.php` — REST API cho developer (hỗ trợ bulk)
-- `config.php` — Cấu hình chung + hàm helper filename
-- `stats.php` — Thống kê và quản lý ảnh
-- `.htaccess` — Redirect
-- `uploads/` — Thư mục lưu ảnh
+## Directory Structure
+- `index.php` — Main Web Interface
+- `script.js` — Frontend Logic & AJAX Handler
+- `style.css` — Responsive CSS Styling
+- `upload.php` — Web UI Upload Handler
+- `delete.php` — Web UI Delete Handler
+- `api.php` — Developer REST API (supports bulk actions)
+- `config.php` — Common Settings & Helper Functions
+- `stats.php` — Dashboard & Image Management
+- `.htaccess` — URL Rewriting & Protection
+- `uploads/` — Directory containing uploaded images
 
 ---
 
 ## REST API
 
-Không cần API key. Hỗ trợ CORS. Trả về JSON chuẩn với danh sách kết quả cho từng item.
+No API key required. CORS enabled. Returns standard JSON responses with details for each processed file.
 
-### 1. Upload ảnh (1 hoặc nhiều file)
+### 1. Upload Images (Single or Bulk)
 
 ```
 POST /api.php?action=upload
 ```
 
-**Field:** `files[]` (nhiều file) hoặc `file` (1 file)
+**Field:** `files[]` (for multiple files) or `file` (for a single file)
 
-> ⚠️ **Lưu ý:** Khi upload nhiều file, field **BẮT BUỘC** phải là `files[]` (có `[]`). Nếu dùng `files` (không có `[]`), PHP chỉ nhận file cuối cùng.
+> ⚠️ **Important:** For multiple file uploads, the field name **MUST** be `files[]` (with brackets). If you use `files` (without brackets), PHP will only parse the last uploaded file.
 
-**cURL (upload nhiều file):**
+**cURL (bulk upload):**
 ```bash
 curl -X POST "https://up.t11n.dev/api.php?action=upload" \
   -F "files[]=@image1.jpg" \
   -F "files[]=@image2.png"
 ```
 
-**cURL (upload 1 file):**
+**cURL (single upload):**
 ```bash
 curl -X POST "https://up.t11n.dev/api.php?action=upload" \
   -F "file=@image1.jpg"
@@ -94,16 +94,16 @@ curl -X POST "https://up.t11n.dev/api.php?action=upload" \
 }
 ```
 
-### 2. Xoá ảnh (1 hoặc nhiều file)
+### 2. Delete Images (Single or Bulk)
 
 ```
 POST /api.php?action=delete
 Content-Type: application/json
 ```
 
-**Body:** truyền mảng tên file `names` (hoặc `name` nếu xoá 1 file). Tên file phải **chính xác** tên đã upload (gồm 32 ký tự random).
+**Body:** Send a JSON object containing the `names` array (or `name` for single file). Filenames must match the obfuscated names stored on the server.
 
-**cURL (xoá hàng loạt):**
+**cURL (bulk delete):**
 ```bash
 curl -X POST "https://up.t11n.dev/api.php?action=delete" \
   -H "Content-Type: application/json" \
@@ -123,5 +123,5 @@ curl -X POST "https://up.t11n.dev/api.php?action=delete" \
 }
 ```
 
-## Giấy phép
+## License
 MIT

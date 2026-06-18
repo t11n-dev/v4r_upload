@@ -1,11 +1,11 @@
 <?php
 /**
- * config.php — Cấu hình chung cho ứng dụng upload.
+ * config.php — General configuration for the upload application.
  *
- * Chứa API keys và các hằng số dùng chung giữa web UI và API.
+ * Contains API keys and shared constants between web UI and API.
  */
 
-// API keys cho developer (thêm key mới vào mảng)
+// API keys for developers (add new keys to this array)
 const API_KEYS = [
     't11n-dev-key-2026-change-me',
 ];
@@ -19,11 +19,12 @@ const ALLOWED_MIME_TYPES = [
     'image/avif' => ['avif'],
 ];
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_API_FILE_COUNT = 20; // Maximum number of files allowed in a single API request
 const UPLOAD_DIR = __DIR__ . '/uploads/';
 
 /**
- * Sanitize tên file thành dạng an toàn (chỉ chứa a-z, 0-9, -, _, .)
+ * Sanitize file name to a safe format (contains only a-z, 0-9, -, _, .)
  */
 function sanitizeFileName($fileName)
 {
@@ -40,7 +41,7 @@ function sanitizeFileName($fileName)
 }
 
 /**
- * Tạo tên file ngẫu nhiên: 32kitungaunhien_timestamp_originalName
+ * Generate a random file name: 32randomChars_timestamp_originalName
  */
 function generateUniqueFileName($originalName, $ext = null)
 {
@@ -62,9 +63,85 @@ function generateUniqueFileName($originalName, $ext = null)
         $randomStr = substr(str_shuffle('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 32);
     }
 
-    // Timestamp hiện tại
+    // Current timestamp
     $timestamp = time();
 
-    // Kết hợp: random_timestamp_name.ext
+    // Combine: random_timestamp_name.ext
     return "{$randomStr}_{$timestamp}_{$safeName}.{$ext}";
+}
+
+/**
+ * Get uploaded files stats (total files count and total size) using a cache file
+ * to optimize memory and disk I/O on low-resource servers.
+ *
+ * @param bool $forceRefresh Force cache rebuild
+ * @return array Array containing totalFiles (int) and totalSize (float)
+ */
+function getStats($forceRefresh = false)
+{
+    $cacheFile = UPLOAD_DIR . '.stats_cache.json';
+    $cacheLifetime = 60; // Cache valid for 60 seconds
+
+    if (!$forceRefresh && is_file($cacheFile) && (time() - filemtime($cacheFile)) < $cacheLifetime) {
+        $content = file_get_contents($cacheFile);
+        if ($content !== false) {
+            $data = json_decode($content, true);
+            if (is_array($data) && isset($data['total_files']) && isset($data['total_size'])) {
+                return [
+                    'totalFiles' => (int)$data['total_files'],
+                    'totalSize'  => (float)$data['total_size']
+                ];
+            }
+        }
+    }
+
+    // Rebuild cache
+    $totalFiles = 0;
+    $totalSize = 0;
+    $dir = UPLOAD_DIR;
+    $allowedExtensions = array_merge(...array_values(ALLOWED_MIME_TYPES));
+
+    if (is_dir($dir)) {
+        $dh = opendir($dir);
+        if ($dh) {
+            while (($file = readdir($dh)) !== false) {
+                // Ignore dotfiles and cache file
+                if ($file[0] !== '.' && is_file($dir . $file)) {
+                    $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                    if (in_array($ext, $allowedExtensions)) {
+                        $totalFiles++;
+                        $totalSize += filesize($dir . $file);
+                    }
+                }
+            }
+            closedir($dh);
+        }
+    }
+
+    $stats = [
+        'total_files' => $totalFiles,
+        'total_size'  => $totalSize
+    ];
+
+    // Ensure upload directory exists before writing cache
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+    file_put_contents($cacheFile, json_encode($stats));
+
+    return [
+        'totalFiles' => $totalFiles,
+        'totalSize'  => $totalSize
+    ];
+}
+
+/**
+ * Clear the stats cache file. Called when files are uploaded or deleted.
+ */
+function clearStatsCache()
+{
+    $cacheFile = UPLOAD_DIR . '.stats_cache.json';
+    if (is_file($cacheFile)) {
+        @unlink($cacheFile);
+    }
 }

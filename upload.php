@@ -42,7 +42,7 @@ if ($file["error"] !== UPLOAD_ERR_OK) {
 
 // Validate file size
 if ($file["size"] > MAX_FILE_SIZE) {
-    echo json_encode(['success' => false, 'message' => 'File size exceeds 100MB limit']);
+    echo json_encode(['success' => false, 'message' => 'File size exceeds 50MB limit']);
     exit;
 }
 
@@ -76,6 +76,7 @@ $targetFile = $targetDir . $savedName;
         . dirname($_SERVER['SCRIPT_NAME']), '/');
 
     if (move_uploaded_file($file["tmp_name"], $targetFile)) {
+        clearStatsCache();
         echo json_encode([
             'success' => true,
             'url'     => $baseUrl . '/uploads/' . $savedName,

@@ -19,35 +19,35 @@ $dir = ($dir === '/' || $dir === '\\') ? '' : $dir;
 $baseUrl = $protocol . '://' . $host . $dir;
 ?>
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Title of the webpage -->
-    <title>Upload Hình Ảnh Nhanh Chóng | Chia Sẻ Ảnh Dễ Dàng</title>
+    <title>Fast Image Upload | Easy Image Sharing</title>
 
     <!-- Meta description for SEO -->
-    <meta name="description" content="Nền tảng upload hình ảnh nhanh chóng và tiện lợi. Chia sẻ hình ảnh của bạn dễ dàng với chất lượng cao và tốc độ tải nhanh.">
+    <meta name="description" content="A fast and convenient image upload platform. Share your images easily with high quality and fast loading speed.">
 
     <!-- Meta keywords for SEO (Optional) -->
-    <meta name="keywords" content="upload hình ảnh, chia sẻ ảnh, upload nhanh, tải hình ảnh, hình ảnh chất lượng cao, chia sẻ ảnh trực tuyến, upload ảnh miễn phí">
+    <meta name="keywords" content="image upload, share images, fast upload, upload pictures, high quality images, share images online, free image upload">
 
     <!-- Robots meta tag to control search engine crawling -->
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph meta tags for better social sharing -->
-    <meta property="og:title" content="Upload Hình Ảnh Nhanh Chóng | Chia Sẻ Ảnh Dễ Dàng">
-    <meta property="og:description" content="Chia sẻ và upload hình ảnh với tốc độ nhanh, chất lượng cao. Dễ dàng tải ảnh lên và chia sẻ với bạn bè trên các nền tảng mạng xã hội.">
+    <meta property="og:title" content="Fast Image Upload | Easy Image Sharing">
+    <meta property="og:description" content="Share and upload images with fast speed and high quality. Easily upload and share images with friends.">
     <meta property="og:image" content="<?php echo htmlspecialchars($baseUrl); ?>/assets/logo.png">
     <meta property="og:url" content="<?php echo htmlspecialchars($baseUrl); ?>">
     <meta property="og:type" content="website">
 
     <!-- Twitter card meta tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Upload Hình Ảnh Nhanh Chóng | Chia Sẻ Ảnh Dễ Dàng">
-    <meta name="twitter:description" content="Chia sẻ và upload hình ảnh với tốc độ nhanh chóng. Upload ảnh lên và chia sẻ dễ dàng với chất lượng vượt trội.">
+    <meta name="twitter:title" content="Fast Image Upload | Easy Image Sharing">
+    <meta name="twitter:description" content="Share and upload images with fast speed. Upload images and share easily with outstanding quality.">
     <meta name="twitter:image" content="<?php echo htmlspecialchars($baseUrl); ?>/assets/logo.png">
 
     <!-- Favicon for website icon -->
@@ -61,11 +61,11 @@ $baseUrl = $protocol . '://' . $host . $dir;
             "@context": "https://schema.org",
             "@type": "WebPage",
             "url": "<?php echo htmlspecialchars($baseUrl); ?>/",
-            "name": "Upload Hình Ảnh Nhanh Chóng | Chia Sẻ Ảnh Dễ Dàng",
-            "description": "Nền tảng upload hình ảnh nhanh chóng và tiện lợi. Chia sẻ hình ảnh của bạn dễ dàng với chất lượng cao và tốc độ tải nhanh.",
+            "name": "Fast Image Upload | Easy Image Sharing",
+            "description": "A fast and convenient image upload platform. Share your images easily with high quality and fast loading speed.",
             "publisher": {
                 "@type": "Organization",
-                "name": "Upload Hình Ảnh Nhanh Chóng",
+                "name": "T11N Upload",
                 "logo": {
                     "@type": "ImageObject",
                     "url": "<?php echo htmlspecialchars($baseUrl); ?>/assets/logo.png"
@@ -96,7 +96,7 @@ $baseUrl = $protocol . '://' . $host . $dir;
         {
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "Upload Hình Ảnh Nhanh Chóng | Chia Sẻ Ảnh Dễ Dàng",
+            "name": "Fast Image Upload | Easy Image Sharing",
             "url": "<?php echo htmlspecialchars($baseUrl); ?>/",
             "logo": "<?php echo htmlspecialchars($baseUrl); ?>/assets/logo.png",
             "sameAs": [
@@ -119,7 +119,7 @@ $baseUrl = $protocol . '://' . $host . $dir;
                 t11n<span class="logo-highlight">upload</span>
             </a>
             <div class="nav-links">
-                <a href="/" class="active">Trang chủ</a>
+                <a href="/" class="active">Home</a>
                 <a href="apidoc.php">API Doc</a>
             </div>
         </div>
@@ -135,7 +135,7 @@ $baseUrl = $protocol . '://' . $host . $dir;
                         </svg>
                     </div>
                     <h3 class="upload-title">Drop files here, click to upload or paste image</h3>
-                    <p class="upload-subtitle">Support for single or bulk uploads. Images (PNG, JPG, WEBP, GIF, AVIF). Max 100MB.</p>
+                    <p class="upload-subtitle">Support for single or bulk uploads. Images (PNG, JPG, WEBP, GIF, AVIF). Max 50MB.</p>
                     <button class="upload-button" type="button">Choose Files</button>
                     <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/gif,image/webp,image/avif" hidden>
                 </div>
