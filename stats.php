@@ -152,16 +152,20 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
             color: #2d3748;
         }
 
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
         .stats-box {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-radius: 20px;
             padding: 3rem 2.5rem;
-            max-width: 850px;
-            margin: 3rem auto;
             box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(226, 232, 240, 0.8);
+            margin: 2rem 0; /* Let .container handle horizontal centering */
         }
 
         .stats-title {
@@ -216,15 +220,27 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
             color: #1a202c;
         }
 
-        .images-table {
+        .header-container {
+            max-width: 850px;
+        }
+
+        .table-responsive {
             width: 100%;
-            border-collapse: collapse;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
             margin-top: 2rem;
-            background: #fff;
             border-radius: 12px;
-            overflow: hidden;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
             border: 1px solid #edf2f7;
+            background: #fff;
+        }
+
+        .images-table {
+            width: 100%;
+            min-width: 700px; /* Prevent table from squishing and breaking layout on mobile */
+            border-collapse: collapse;
+            margin-top: 0;
+            background: transparent;
         }
 
         .images-table th,
@@ -485,7 +501,8 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 4px;
+            flex-wrap: wrap; /* Ensure links wrap beautifully on narrow screens */
+            gap: 6px;
         }
 
         .page-link {
@@ -531,8 +548,7 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
 
         @media (max-width: 768px) {
             .stats-box {
-                padding: 1.5rem;
-                margin: 1.5rem 10px;
+                padding: 1.5rem 1rem; /* Adjust padding on narrow screens */
             }
 
             .stats-title {
@@ -574,81 +590,85 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
         </div>
     </header>
 
-    <div class="stats-box">
-        <div class="stats-title">Upload Statistics</div>
-        <ul class="stats-list">
-            <li>
-                <span class="stats-label">Total Files</span>
-                <span class="stats-val"><?php echo $totalFiles; ?></span>
-            </li>
-            <li>
-                <span class="stats-label">Total Size</span>
-                <span class="stats-val"><?php echo formatSize($totalSize); ?></span>
-            </li>
-        </ul>
+    <div class="container">
+        <div class="stats-box">
+            <div class="stats-title">Upload Statistics</div>
+            <ul class="stats-list">
+                <li>
+                    <span class="stats-label">Total Files</span>
+                    <span class="stats-val"><?php echo $totalFiles; ?></span>
+                </li>
+                <li>
+                    <span class="stats-label">Total Size</span>
+                    <span class="stats-val"><?php echo formatSize($totalSize); ?></span>
+                </li>
+            </ul>
 
-        <?php echo $deleteMessage; ?>
+            <?php echo $deleteMessage; ?>
 
-        <?php if ($totalFiles > 0) { ?>
-            <div class="bulk-delete-section">
-                <button type="button" id="bulkDeleteBtn" class="btn-delete-all">Delete All Images</button>
-            </div>
-
-            <!-- Password modal will be rendered at the bottom of the page to fix backdrop-filter containment issues -->
-
-
-            <table class="images-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">#</th>
-                        <th class="preview-col">Preview</th>
-                        <th>File Name</th>
-                        <th style="width: 180px;">Upload Date</th>
-                        <th style="width: 120px;">Size</th>
-                        <th style="width: 100px;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($imagesPage as $i => $img) { ?>
-                        <tr>
-                            <td><?php echo $start + $i + 1; ?></td>
-                            <td class="preview-col">
-                                <img src="<?php echo htmlspecialchars($img['url']); ?>" alt="Preview" class="table-thumb" loading="lazy">
-                            </td>
-                            <td class="filename-col"><?php echo htmlspecialchars($img['name']); ?></td>
-                            <td><?php echo date('Y-m-d H:i:s', $img['time']); ?></td>
-                            <td><?php echo formatSize($img['size']); ?></td>
-                            <td><a href="<?php echo htmlspecialchars($img['url']); ?>" target="_blank" class="btn-view">View</a></td>
-                        </tr>
-                    <?php } ?>
-                </tbody>
-            </table>
-
-            <?php if ($totalPages > 1) { ?>
-                <div class="pagination">
-                    <?php
-                    $maxLinks = 1;
-                    $startPage = max(1, $page - $maxLinks);
-                    $endPage = min($totalPages, $page + $maxLinks);
-
-                    if ($startPage > 1) {
-                        echo '<a href="?page=1" class="page-link page-link--default">1</a>';
-                        if ($startPage > 2) echo '<span class="page-ellipsis">...</span>';
-                    }
-                    for ($p = $startPage; $p <= $endPage; $p++) {
-                        $activeClass = ($p == $page) ? 'page-link--active' : 'page-link--default';
-                        echo '<a href="?page=' . $p . '" class="page-link ' . $activeClass . '">' . $p . '</a>';
-                    }
-                    if ($endPage < $totalPages) {
-                        if ($endPage < $totalPages - 1) echo '<span class="page-ellipsis">...</span>';
-                        echo '<a href="?page=' . $totalPages . '" class="page-link page-link--default">' . $totalPages . '</a>';
-                    }
-                    ?>
+            <?php if ($totalFiles > 0) { ?>
+                <div class="bulk-delete-section">
+                    <button type="button" id="bulkDeleteBtn" class="btn-delete-all">Delete All Images</button>
                 </div>
+
+                <!-- Password modal will be rendered at the bottom of the page to fix backdrop-filter containment issues -->
+
+
+                <div class="table-responsive">
+                    <table class="images-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th class="preview-col">Preview</th>
+                                <th>File Name</th>
+                                <th style="width: 180px;">Upload Date</th>
+                                <th style="width: 120px;">Size</th>
+                                <th style="width: 100px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($imagesPage as $i => $img) { ?>
+                                <tr>
+                                    <td><?php echo $start + $i + 1; ?></td>
+                                    <td class="preview-col">
+                                        <img src="<?php echo htmlspecialchars($img['url']); ?>" alt="Preview" class="table-thumb" loading="lazy">
+                                    </td>
+                                    <td class="filename-col"><?php echo htmlspecialchars($img['name']); ?></td>
+                                    <td><?php echo date('Y-m-d H:i:s', $img['time']); ?></td>
+                                    <td><?php echo formatSize($img['size']); ?></td>
+                                    <td><a href="<?php echo htmlspecialchars($img['url']); ?>" target="_blank" class="btn-view">View</a></td>
+                                </tr>
+                            <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <?php if ($totalPages > 1) { ?>
+                    <div class="pagination">
+                        <?php
+                        $maxLinks = 1;
+                        $startPage = max(1, $page - $maxLinks);
+                        $endPage = min($totalPages, $page + $maxLinks);
+
+                        if ($startPage > 1) {
+                            echo '<a href="?page=1" class="page-link page-link--default">1</a>';
+                            if ($startPage > 2) echo '<span class="page-ellipsis">...</span>';
+                        }
+                        for ($p = $startPage; $p <= $endPage; $p++) {
+                            $activeClass = ($p == $page) ? 'page-link--active' : 'page-link--default';
+                            echo '<a href="?page=' . $p . '" class="page-link ' . $activeClass . '">' . $p . '</a>';
+                        }
+                        if ($endPage < $totalPages) {
+                            if ($endPage < $totalPages - 1) echo '<span class="page-ellipsis">...</span>';
+                            echo '<a href="?page=' . $totalPages . '" class="page-link page-link--default">' . $totalPages . '</a>';
+                        }
+                        ?>
+                    </div>
+                <?php } ?>
+            <?php } else { ?>
+                <div class="no-images">No images uploaded yet.</div>
             <?php } ?>
-        <?php } else { ?>
-            <div class="no-images">No images uploaded yet.</div>
-        <?php } ?>
+        </div>
     </div>
 
     <?php if ($totalFiles > 0) { ?>
