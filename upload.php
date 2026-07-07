@@ -71,9 +71,7 @@ $savedName = generateUniqueFileName($file["name"], $finalExt);
 $targetFile = $targetDir . $savedName;
 
 // Calculate base URL
-    $baseUrl = rtrim((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
-        . '://' . $_SERVER['HTTP_HOST']
-        . dirname($_SERVER['SCRIPT_NAME']), '/');
+$baseUrl = getBaseUrl();
 
     if (move_uploaded_file($file["tmp_name"], $targetFile)) {
         clearStatsCache();

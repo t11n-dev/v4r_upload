@@ -113,10 +113,7 @@ function handleUpload(): void
     $anySuccess = false;
 
     // Get base URL
-    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-    $baseUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']);
-    // Remove trailing slash if exists for cleaner concatenation
-    $baseUrl = rtrim($baseUrl, '/');
+    $baseUrl = getBaseUrl();
 
     foreach ($fileList as $file) {
         // Init result object

@@ -6,17 +6,15 @@
  * Provides drag & drop, click, and paste upload interface.
  */
 
+require_once __DIR__ . '/config.php';
+
 session_start();
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 $csrfToken = $_SESSION['csrf_token'];
 
-$protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'up.t11n.dev';
-$dir = dirname($_SERVER['SCRIPT_NAME']);
-$dir = ($dir === '/' || $dir === '\\') ? '' : $dir;
-$baseUrl = $protocol . '://' . $host . $dir;
+$baseUrl = getBaseUrl();
 ?>
 <!DOCTYPE html>
 <html lang="en">

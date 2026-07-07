@@ -28,9 +28,13 @@ if (!isset($input['url'])) {
 
 $url = $input['url'];
 
+// Extract the filename from the URL to handle absolute URLs and prevent path traversal
+$urlPath = parse_url($url, PHP_URL_PATH);
+$fileName = basename($urlPath);
+
 // Only allow deleting files within the uploads directory
 $uploadsDir = realpath(UPLOAD_DIR);
-$filePath = realpath(__DIR__ . '/' . ltrim($url, '/'));
+$filePath = realpath(UPLOAD_DIR . $fileName);
 
 if (!$filePath || strpos($filePath, $uploadsDir) !== 0) {
     http_response_code(400);

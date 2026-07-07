@@ -24,6 +24,18 @@ const MAX_API_FILE_COUNT = 20; // Maximum number of files allowed in a single AP
 const UPLOAD_DIR = __DIR__ . '/uploads/';
 
 /**
+ * Get dynamic application base URL.
+ */
+function getBaseUrl()
+{
+    $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'up.t11n.dev';
+    $dir = dirname($_SERVER['SCRIPT_NAME']);
+    $dir = ($dir === '/' || $dir === '\\') ? '' : $dir;
+    return rtrim($protocol . '://' . $host . $dir, '/');
+}
+
+/**
  * Sanitize file name to a safe format (contains only a-z, 0-9, -, _, .)
  */
 function sanitizeFileName($fileName)
