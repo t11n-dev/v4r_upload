@@ -1,0 +1,8 @@
+User-agent: *
+# JSON endpoints — nothing to index
+Disallow: /api.php
+Disallow: /upload.php
+Disallow: /delete.php
+# stats.php is NOT disallowed on purpose: crawlers must fetch it to see its noindex.
+
+Sitemap: https://up.t11n.dev/sitemap.xml

@@ -6,15 +6,45 @@ session_start();
 
 require_once __DIR__ . '/config.php';
 $currentDomain = getBaseUrl();
+$siteUrl = getSiteUrl();
+$pageTitle = 'Image Upload REST API Reference | T11N Upload';
+$pageDescription = 'REST API documentation for T11N Upload. Upload and delete images (single or bulk) with simple JSON endpoints, cURL examples and CORS support.';
+$pageUrl = $siteUrl . '/apidoc.php';
+$jsonLd = [
+    '@context' => 'https://schema.org',
+    '@type' => 'TechArticle',
+    'headline' => 'T11N Upload REST API Reference',
+    'description' => $pageDescription,
+    'url' => $pageUrl,
+    'inLanguage' => 'en',
+    'isPartOf' => ['@id' => $siteUrl . '/#website'],
+    'publisher' => ['@id' => $siteUrl . '/#organization'],
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Reference | T11N Fast Image Upload</title>
-    <meta name="description" content="REST API documentation for T11N Upload. Easy integration guide for uploading and deleting images (single or bulk).">
+    <title><?php echo htmlspecialchars($pageTitle); ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($pageDescription); ?>">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#1a202c">
+    <link rel="canonical" href="<?php echo htmlspecialchars($pageUrl); ?>">
+
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="T11N Upload">
+    <meta property="og:locale" content="en_US">
+    <meta property="og:title" content="<?php echo htmlspecialchars($pageTitle); ?>">
+    <meta property="og:description" content="<?php echo htmlspecialchars($pageDescription); ?>">
+    <meta property="og:url" content="<?php echo htmlspecialchars($pageUrl); ?>">
+    <meta property="og:image" content="<?php echo htmlspecialchars($siteUrl); ?>/assets/logo.png">
+    <meta property="og:image:alt" content="T11N Upload logo">
+    <meta name="twitter:card" content="summary">
+
     <link rel="icon" href="./assets/favicon.png" type="image/png">
+    <link rel="apple-touch-icon" href="./assets/logo-icon.png">
+    <script type="application/ld+json"><?php echo json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG); ?></script>
     
     <!-- Link to the main style.css for consistent header/footer/font styling -->
     <link rel="stylesheet" href="./style.css">
@@ -297,13 +327,13 @@ $currentDomain = getBaseUrl();
     <header class="header">
         <div class="header-container">
             <a href="/" id="home-link" class="logo-text">
-                <img src="./assets/logo-icon.png" alt="T11N Icon" class="logo-icon-img">
+                <img src="./assets/logo-icon.png" alt="" width="42" height="42" class="logo-icon-img">
                 t11n<span class="logo-highlight">upload</span>
             </a>
-            <div class="nav-links">
+            <nav class="nav-links" aria-label="Main">
                 <a href="/">Home</a>
-                <a href="apidoc.php" class="active">API Doc</a>
-            </div>
+                <a href="apidoc.php" class="active" aria-current="page">API Doc</a>
+            </nav>
         </div>
     </header>
 

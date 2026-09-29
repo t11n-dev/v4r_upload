@@ -23,6 +23,18 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const MAX_API_FILE_COUNT = 20; // Maximum number of files allowed in a single API request
 const UPLOAD_DIR = __DIR__ . '/uploads/';
 
+// Public production URL, used for canonical / Open Graph / sitemap (no trailing slash).
+// Set to '' to fall back to the request-derived base URL.
+const SITE_URL = 'https://up.t11n.dev';
+
+/**
+ * Get the canonical site URL for SEO tags (not affected by the request Host header).
+ */
+function getSiteUrl()
+{
+    return SITE_URL !== '' ? rtrim(SITE_URL, '/') : getBaseUrl();
+}
+
 /**
  * Get dynamic application base URL.
  */

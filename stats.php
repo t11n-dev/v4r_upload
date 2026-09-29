@@ -15,6 +15,9 @@ if (empty($_SESSION['csrf_token'])) {
 
 require_once __DIR__ . '/config.php';
 
+// Admin dashboard listing user uploads — keep it out of search results.
+header('X-Robots-Tag: noindex, nofollow', true);
+
 // Set default timezone to Asia/Ho_Chi_Minh (UTC+7)
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 // Dynamic bulk delete password based on current date in dmY format (e.g., 18062026)
@@ -135,6 +138,7 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
     <meta charset="utf-8">
     <title>Upload Statistics | T11N Upload</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
     
     <link rel="stylesheet" href="./style.css">
     <!-- Favicon -->
@@ -569,13 +573,13 @@ $totalPages = $totalFiles ? ceil($totalFiles / $perPage) : 1;
     <header class="header">
         <div class="header-container">
             <a href="/" id="home-link" class="logo-text">
-                <img src="./assets/logo-icon.png" alt="T11N Icon" class="logo-icon-img">
+                <img src="./assets/logo-icon.png" alt="" width="42" height="42" class="logo-icon-img">
                 t11n<span class="logo-highlight">upload</span>
             </a>
-            <div class="nav-links">
+            <nav class="nav-links" aria-label="Main">
                 <a href="/">Home</a>
                 <a href="apidoc.php">API Doc</a>
-            </div>
+            </nav>
         </div>
     </header>
 
