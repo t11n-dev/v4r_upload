@@ -1,0 +1,28 @@
+# T11N Upload
+
+> Free image upload and sharing service at https://up.t11n.dev. Upload PNG, JPG, GIF, WEBP or AVIF images (max 50MB each) by drag & drop, click, clipboard paste or REST API, and get a direct public link instantly. No account or API key required.
+
+Key facts:
+
+- Supported formats: JPEG (.jpg, .jpeg), PNG, GIF, WEBP, AVIF — images only, verified by real MIME type.
+- Max file size: 50MB per file. Max 20 files per API request.
+- Uploaded files are renamed to `<32 random hex chars>_<unix timestamp>_<sanitized original name>.<ext>` and served from `https://up.t11n.dev/uploads/`.
+- Share formats offered in the web UI: direct URL, HTML `<img>`, Markdown, BBCode.
+- REST API: no authentication, CORS enabled, JSON responses.
+- Operated by T11N Team (https://t11n.dev, dev@t11n.dev).
+
+## Docs
+
+- [REST API reference](https://up.t11n.dev/apidoc.php): Endpoints, parameters, cURL examples and response formats for upload and delete.
+- [Web uploader](https://up.t11n.dev/): Browser UI for single or bulk uploads.
+
+## API quick reference
+
+- Upload (single): `curl -X POST "https://up.t11n.dev/api.php?action=upload" -F "file=@image.jpg"`
+- Upload (bulk): `curl -X POST "https://up.t11n.dev/api.php?action=upload" -F "files[]=@a.jpg" -F "files[]=@b.png"` — the field name must be `files[]` with brackets.
+- Delete: `curl -X POST "https://up.t11n.dev/api.php?action=delete" -H "Content-Type: application/json" -d '{"names": ["<stored file name>"]}'` — also accepts `{"name": "..."}` for a single file.
+- Upload response: `{"success": true, "data": [{"name", "original_name", "status", "url", "size", "mime", "width", "height"}]}`; failed items have `"status": "error"` and an `"error"` message.
+
+## Optional
+
+- [Source & organization](https://github.com/t11n-dev): T11N Team on GitHub.

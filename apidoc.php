@@ -44,6 +44,7 @@ $jsonLd = [
 
     <link rel="icon" href="./assets/favicon.png" type="image/png">
     <link rel="apple-touch-icon" href="./assets/logo-icon.png">
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-friendly site summary">
     <script type="application/ld+json"><?php echo json_encode($jsonLd, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG); ?></script>
     
     <!-- Link to the main style.css for consistent header/footer/font styling -->
